@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Heart Build Animation</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;overflow:hidden;font-family:Consolas,monospace;height:100vh}
+canvas{position:fixed;inset:0}
+#msg{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);color:#fff;font-size:64px;font-weight:900;letter-spacing:10px;opacity:0;transition:2s;text-shadow:0 0 15px #fff,0 0 30px #ff004c,0 0 60px #ff004c;z-index:5}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<canvas id="heart"></canvas>
+<div id="msg">LOVE YOU QUEEN</div>
+<script>
+const bg=document.getElementById('bg');
+const bctx=bg.getContext('2d');
+bg.width=innerWidth;bg.height=innerHeight;
+const rain='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%';
+const fs=16;const cols=Math.floor(innerWidth/fs);const drops=Array(cols).fill(1);
+function matrix(){bctx.fillStyle='rgba(0,0,0,0.08)';bctx.fillRect(0,0,bg.width,bg.height);bctx.fillStyle='#00ff66';bctx.font=fs+'px monospace';for(let i=0;i<drops.length;i++){const t=rain[Math.floor(Math.random()*rain.length)];bctx.fillText(t,i*fs,drops[i]*fs);if(drops[i]*fs>bg.height&&Math.random()>0.97)drops[i]=0;drops[i]++;}}
+setInterval(matrix,30);
+
+const canvas=document.getElementById('heart');
+const ctx=canvas.getContext('2d');
+canvas.width=innerWidth;canvas.height=innerHeight;
+
+const shape=[
+'          ########      ########          ',
+'      #############      ###########      ',
+'    ################   ################    ',
+'  ################### ###################  ',
+' ######################################## ',
+'##########################################',
+'##########################################',
+' ######################################## ',
+'  ######################################  ',
+'   ####################################   ',
+'    ##################################    ',
+'      ##############################      ',
+'        ##########################        ',
+'          ######################          ',
+'            ##################            ',
+'              ##############              ',
+'                ##########                ',
+'                  ######                  ',
+'                    ##                    '
+];
+
+const chars='@#$%&*+=<>ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+const rows=[];
+const spacing=14;
+const offsetX=innerWidth/2-300;
+const offsetY=innerHeight/2-180;
+
+shape.forEach((row,y)=>{
+ let arr=[];
+ [...row].forEach((c,x)=>{
+  if(c=='#'){
+   arr.push({
+    tx:offsetX+x*spacing,
+    ty:offsetY+y*spacing,
+    sy:innerHeight+Math.random()*300,
+    char:chars[Math.floor(Math.random()*chars.length)]
+   });
+  }
+ });
+ rows.push(arr);
+});
+
+const buildTime=5000;
+const start=performance.now();
+
+function draw(now){
+ ctx.clearRect(0,0,canvas.width,canvas.height);
+ let progress=Math.min((now-start)/buildTime,1);
+
+ const visibleRows=Math.floor(progress*rows.length);
+
+ for(let r=rows.length-1;r>=rows.length-visibleRows;r--){
+   if(r<0) continue;
+
+   rows[r].forEach(p=>{
+      let rowStart=(rows.length-1-r)/rows.length;
+      let rowProgress=(progress-rowStart)*rows.length;
+      rowProgress=Math.max(0,Math.min(rowProgress,1));
+
+      const y=p.sy+(p.ty-p.sy)*rowProgress;
+
+      ctx.fillStyle='#ff2455';
+      ctx.shadowColor='#ff003c';
+      ctx.shadowBlur=25;
+      ctx.font='14px Consolas';
+      ctx.fillText(p.char,p.tx,y);
+   });
+ }
+
+ if(progress>=1){
+   document.getElementById('msg').style.opacity=1;
+ }
+
+ requestAnimationFrame(draw);
+}
+
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>
